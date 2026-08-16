@@ -1,33 +1,38 @@
 # AudioBooth User Manual
 
-## pinout
+## Pinout
 
-Pinout of the keyboard is assumed to be:
+The keypad uses the following matrix:
 
-        col0 col1 col2 col3
-row0      1    2    3    A
-row1      4    5    6    B
-row2      7    8    9    C
-row3      *    0    #    D
+| | Column 0 | Column 1 | Column 2 | Column 3 |
+|---|:---:|:---:|:---:|:---:|
+| **Row 0** | 1 | 2 | 3 | A |
+| **Row 1** | 4 | 5 | 6 | B |
+| **Row 2** | 7 | 8 | 9 | C |
+| **Row 3** | `*` | 0 | `#` | D |
 
+GPIO assignments:
 
-PIN_ROW0 = GPIO_NUM_4;
-PIN_ROW1 = GPIO_NUM_5;
-PIN_ROW2 = GPIO_NUM_6;
-PIN_ROW3 = GPIO_NUM_7;
+```text
+PIN_ROW0 = GPIO_NUM_4
+PIN_ROW1 = GPIO_NUM_5
+PIN_ROW2 = GPIO_NUM_6
+PIN_ROW3 = GPIO_NUM_7
 
-PIN_COL0 = GPIO_NUM_15;
-PIN_COL1 = GPIO_NUM_16;
-PIN_COL2 = GPIO_NUM_17;
-PIN_COL3 = GPIO_NUM_18;
-
+PIN_COL0 = GPIO_NUM_15
+PIN_COL1 = GPIO_NUM_16
+PIN_COL2 = GPIO_NUM_17
+PIN_COL3 = GPIO_NUM_18
+```
 
 ## LED color codes
-green: SD card used and ready
-yellow: Internal memory used and ready
-Orange: no files found to play
-red: hardware error
 
+| Color | Meaning |
+|---|---|
+| Green | SD card selected and ready |
+| Yellow | Internal FFat storage selected and ready |
+| Orange | No playable files found |
+| Red | Hardware error |
 
 ## Overview
 
@@ -101,17 +106,21 @@ Bitrate:     32 kbit/s CBR
 Mono 44.1 kHz at 64 kbit/s also works but requires about twice the storage.
 Do not rename another audio format to `.mp3`.
 
-MP3 format	Typical quality in handset	estimate
-Mono, 16 kbps	Very low, speech only		~100 min
-Mono, 24 kbps	Basic speech			~66 min
-Mono, 32 kbps	Good telephone speech		~50 min
-Mono, 40 kbps	Clear speech			~40 min
-Mono, 48 kbps	Very good speech		~33 min
-Mono, 56 kbps	Speech and simple music		~28 min
-Mono, 64 kbps	High quality for handset	~25 min
-Mono, 80 kbps	More than usually needed	~20 min
-Mono, 96 kbps	High-quality mono		~16.5 min
-Mono, 128 kbps	Unnecessary for this handset	~12.5 min
+The current partition table provides 12 MiB of internal FFat storage. The
+following estimates reserve approximately 5% for filesystem overhead:
+
+| MP3 format | Typical handset quality | Estimated duration |
+|---|---|---:|
+| Mono, 16 kbit/s | Very low; speech only | ~100 min |
+| Mono, 24 kbit/s | Basic speech | ~66 min |
+| Mono, 32 kbit/s | Good telephone speech | ~50 min |
+| Mono, 40 kbit/s | Clear speech | ~40 min |
+| Mono, 48 kbit/s | Very good speech | ~33 min |
+| Mono, 56 kbit/s | Speech and simple music | ~28 min |
+| Mono, 64 kbit/s | High quality for a handset | ~25 min |
+| Mono, 80 kbit/s | More than usually needed | ~20 min |
+| Mono, 96 kbit/s | High-quality mono | ~16.5 min |
+| Mono, 128 kbit/s | Unnecessary for this handset | ~12.5 min |
 
 ## Connecting to the website
 
@@ -263,37 +272,22 @@ active directory and then each parent up to root. The active directory does
 not change. After the error message, it tries the active directory's
 `ini`/`main.mp3` again. Always provide a valid root `/error.mp3`.
 
-## Keypad layouts
+## Keypad layout
 
-Only root `keyflow.txt` should define the layout.
-
-Layout 1:
-
-```ini
-keypad=1
-```
-
-```text
-ROW0: 1 2 3 A
-ROW1: 4 5 6 B
-ROW2: 7 8 9 C
-ROW3: * 0 # D
-```
-
-Layout 2 (default):
+Only root `keyflow.txt` should define the layout. The current keypad uses:
 
 ```ini
 keypad=2
 ```
 
-```text
-ROW0: 1 4 7 *
-ROW1: 2 5 8 0
-ROW2: 3 6 9 #
-ROW3: A B C D
-```
+| | Column 0 | Column 1 | Column 2 | Column 3 |
+|---|:---:|:---:|:---:|:---:|
+| **Row 0** | 1 | 2 | 3 | A |
+| **Row 1** | 4 | 5 | 6 | B |
+| **Row 2** | 7 | 8 | 9 | C |
+| **Row 3** | `*` | 0 | `#` | D |
 
-If `keypad` is absent or not `1`, layout 2 is used.
+If `keypad` is absent, layout 2 is used.
 
 ## Complete example
 
