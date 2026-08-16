@@ -1,0 +1,21 @@
+; AudioBooth keypad test configuration
+ini=main.mp3
+keypad=2
+no_key=silence
+
+0=key_0.mp3
+1=key_1.mp3
+2=key_2.mp3
+3=key_3.mp3
+4=key_4.mp3
+5=key_5.mp3
+6=key_6.mp3
+7=key_7.mp3
+8=key_8.mp3
+9=key_9.mp3
+*=key_star.mp3
+#=key_hash.mp3
+A=key_A.mp3
+B=key_B.mp3
+C=key_C.mp3
+D=key_D.mp3

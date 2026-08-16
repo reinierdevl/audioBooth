@@ -1,0 +1,354 @@
+# AudioBooth User Manual
+
+## pinout
+
+Pinout of the keyboard is assumed to be:
+
+        col0 col1 col2 col3
+row0      1    2    3    A
+row1      4    5    6    B
+row2      7    8    9    C
+row3      *    0    #    D
+
+
+PIN_ROW0 = GPIO_NUM_4;
+PIN_ROW1 = GPIO_NUM_5;
+PIN_ROW2 = GPIO_NUM_6;
+PIN_ROW3 = GPIO_NUM_7;
+
+PIN_COL0 = GPIO_NUM_15;
+PIN_COL1 = GPIO_NUM_16;
+PIN_COL2 = GPIO_NUM_17;
+PIN_COL3 = GPIO_NUM_18;
+
+
+## LED color codes
+green: SD card used and ready
+yellow: Internal memory used and ready
+Orange: no files found to play
+red: hardware error
+
+
+## Overview
+
+AudioBooth is a standalone telephone-handset MP3 player. It uses a microSD
+card or ESP32 internal FFat storage; no external server is required. 
+
+Lifting the handset starts a session in the root directory. Keypad choices can
+play files or open menu directories. Replacing the handset stops playback and
+resets the next session to root.
+
+The network stays connected during playback, but the website is blocked while
+the handset is lifted and reports:
+
+```text
+user interface not available, device in use
+```
+
+## Storage selection
+
+Storage is selected once during reset or power-up:
+
+1. AudioBooth tries to mount the microSD card.
+2. If successful, SD is used for the entire boot.
+3. Otherwise, internal FFat is used.
+
+Only the selected storage is visible. If the selected SD card is removed,
+playback and file access can fail. Reinserting it does not cause fallback to
+FFat and may not restore operation. Reinsert it and reset or power-cycle.
+
+### SD-card requirements
+
+- Recommended capacity: 32 GB or smaller; 16 GB is suitable.
+- Partition table: MBR.
+- One primary partition.
+- Filesystem: FAT32.
+- Allocation unit: formatter default.
+- Insert the card before reset or power-up.
+
+exFAT, NTFS and multiple partitions are not supported. Cards larger than
+32 GB may work when manually formatted as FAT32 but are not recommended for
+the first installation. There is no card-detect switch; the firmware checks
+the card through SPI.
+
+## Required files
+
+Recommended root layout:
+
+```text
+/
+|-- main.mp3
+|-- error.mp3
+`-- keyflow.txt
+```
+
+- `main.mp3` is the default initial audio.
+- `keyflow.txt` optionally defines another initial file and keypad actions.
+- `error.mp3` is the fallback message for invalid targets.
+
+If no playable file exists, AudioBooth remains silent. Match filename spelling
+and capitalization exactly.
+
+Recommended format for telephone speech:
+
+```text
+Codec:       MP3
+Channels:    mono
+Sample rate: 22,050 Hz
+Bitrate:     32 kbit/s CBR
+```
+
+Mono 44.1 kHz at 64 kbit/s also works but requires about twice the storage.
+Do not rename another audio format to `.mp3`.
+
+MP3 format	Typical quality in handset	estimate
+Mono, 16 kbps	Very low, speech only		~100 min
+Mono, 24 kbps	Basic speech			~66 min
+Mono, 32 kbps	Good telephone speech		~50 min
+Mono, 40 kbps	Clear speech			~40 min
+Mono, 48 kbps	Very good speech		~33 min
+Mono, 56 kbps	Speech and simple music		~28 min
+Mono, 64 kbps	High quality for handset	~25 min
+Mono, 80 kbps	More than usually needed	~20 min
+Mono, 96 kbps	High-quality mono		~16.5 min
+Mono, 128 kbps	Unnecessary for this handset	~12.5 min
+
+## Connecting to the website
+
+If no configured Wi-Fi network is available, AudioBooth creates:
+
+```text
+SSID:     audiobooth_xx
+Password: 0123456789
+```
+
+`xx` is the two-digit booth ID from `00` through `15`. An open ID jumper is
+logical 0 and a jumper connected to ground is logical 1. `ID0` is bit 0 and
+`ID3` is bit 3. The same `audiobooth_xx` name is advertised as the device
+hostname when AudioBooth joins a configured Wi-Fi network.
+
+Connect a phone or computer, then open the IP address printed in Serial. The
+usual AP address is `http://192.168.4.1/`.
+
+Existing-network credentials can be supplied as defaults in
+`include/wifi_config.h`, or through **Wi-Fi for next reset** on the website.
+Web-entered values are stored in ESP32 NVS and override compiled defaults.
+They take effect after reset without interrupting the current connection.
+Passwords may be empty for open networks; otherwise use 8–63 characters.
+
+AudioBooth makes one initial connection attempt. If it times out, fallback AP
+mode remains selected for that boot.
+
+## Managing files through the website
+
+Keep the handset down while using the website. Playback and web storage access
+are never permitted simultaneously. 
+
+### Browse and create directories
+
+Select a directory name to open it. It becomes the destination for uploads.
+Use **Parent directory** to move upward.
+
+To create a directory:
+
+1. Open its intended parent.
+2. Enter a name under **Create directory**.
+3. Select **Create**.
+4. Select its name to open it.
+
+### Upload files
+
+1. Open the destination directory.
+2. Choose a file under **Upload to this directory**.
+3. Select **Upload**.
+4. Wait for 100% and for the page to reload.
+
+An existing file with exactly the same name is always overwritten. Do not
+lift the handset, reset, remove SD or disconnect power during upload. If the
+handset is lifted, the upload is rejected and a partial new file is removed.
+
+### Delete and download
+
+- **Delete** permanently removes a file; this cannot be undone.
+- The website does not currently delete directories.
+- On a configured existing Wi-Fi network, select a filename to download it.
+- Download is disabled in fallback AP mode.
+
+## Configuring `keyflow.txt`
+
+Every menu directory may contain MP3 files, subdirectories and a local
+`keyflow.txt`. When that directory becomes active, its configuration is read.
+If `keyflow.txt` or `ini=` is absent, `main.mp3` is the initial file.
+
+Example root configuration:
+
+```ini
+ini=welcome.mp3
+1=information.mp3
+2=stories
+3=/opening_hours
+no_key=silence
+keypad=2
+```
+
+This plays `welcome.mp3` initially, makes key `1` play a file, key `2` enter a
+relative directory, and key `3` enter an absolute directory. Spaces around
+names and values are ignored. Lines starting with `;` are comments.
+
+Supported keys:
+
+```text
+0 1 2 3 4 5 6 7 8 9 * # A B C D
+```
+
+An unmapped key does nothing and leaves current playback unchanged.
+
+### File targets
+
+File in the active directory:
+
+```ini
+1=information.mp3
+```
+
+Absolute and relative paths:
+
+```ini
+2=/shared/message.mp3
+3=local_audio/message.mp3
+```
+
+Documented brace form:
+
+```ini
+4={/shared/}message.mp3
+```
+
+### Directory targets
+
+A value that is not an MP3 target is interpreted as a directory:
+
+```ini
+5=stories
+6=/opening_hours
+```
+
+`stories` is relative to the active directory. `/opening_hours` is relative to
+root. A non-empty selected directory becomes active and its configuration is
+processed. An empty or missing target triggers error handling while the old
+directory remains active.
+
+## End-of-file behavior
+
+`no_key` is applied after a file ends and no key is pressed during its delay.
+
+```ini
+no_key=silence
+no_key=repeat, 5
+no_key=next, 3
+```
+
+- `silence`: wait indefinitely; also the default when omitted.
+- `repeat, 5`: replay the last file after five seconds.
+- `next, 3`: play the next MP3 after three seconds.
+
+`next` uses case-insensitive alphabetical order and loops after the last MP3.
+Directories, non-MP3 files and `error.mp3` are excluded. Omitting the number
+means zero seconds.
+
+## Error handling
+
+For an invalid file or directory, AudioBooth searches for `error.mp3` in the
+active directory and then each parent up to root. The active directory does
+not change. After the error message, it tries the active directory's
+`ini`/`main.mp3` again. Always provide a valid root `/error.mp3`.
+
+## Keypad layouts
+
+Only root `keyflow.txt` should define the layout.
+
+Layout 1:
+
+```ini
+keypad=1
+```
+
+```text
+ROW0: 1 2 3 A
+ROW1: 4 5 6 B
+ROW2: 7 8 9 C
+ROW3: * 0 # D
+```
+
+Layout 2 (default):
+
+```ini
+keypad=2
+```
+
+```text
+ROW0: 1 4 7 *
+ROW1: 2 5 8 0
+ROW2: 3 6 9 #
+ROW3: A B C D
+```
+
+If `keypad` is absent or not `1`, layout 2 is used.
+
+## Complete example
+
+```text
+/
+|-- keyflow.txt
+|-- main.mp3
+|-- welcome.mp3
+|-- information.mp3
+|-- error.mp3
+|-- stories/
+|   |-- keyflow.txt
+|   |-- main.mp3
+|   |-- story_01.mp3
+|   |-- story_02.mp3
+|   `-- error.mp3
+`-- opening_hours/
+    |-- keyflow.txt
+    |-- hours.mp3
+    `-- error.mp3
+```
+
+Root `keyflow.txt`:
+
+```ini
+ini=welcome.mp3
+1=information.mp3
+2=stories
+3=/opening_hours
+no_key=silence
+keypad=2
+```
+
+`/stories/keyflow.txt`:
+
+```ini
+ini=main.mp3
+1=story_01.mp3
+2=story_02.mp3
+no_key=next, 5
+```
+
+`/opening_hours/keyflow.txt`:
+
+```ini
+ini=hours.mp3
+no_key=repeat, 10
+```
+
+## Operational checklist
+
+1. Format and populate SD, or upload to internal storage.
+2. Provide root `main.mp3`, or a valid `ini=` target.
+3. Provide root `error.mp3`.
+4. Insert or replace SD while powered off, then reset/power up.
+5. Check Serial to confirm whether SD or FFat was selected.
+6. Keep the handset down while managing files.
+7. Test every configured key, directory and error path before public use.
