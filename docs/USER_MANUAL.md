@@ -1,20 +1,5 @@
 # AudioBooth User Manual
 
-## Pinout
-
-Keypad GPIO assignments:
-
-```text
-PIN_ROW0 = GPIO_NUM_4
-PIN_ROW1 = GPIO_NUM_5
-PIN_ROW2 = GPIO_NUM_6
-PIN_ROW3 = GPIO_NUM_7
-
-PIN_COL0 = GPIO_NUM_15
-PIN_COL1 = GPIO_NUM_16
-PIN_COL2 = GPIO_NUM_17
-PIN_COL3 = GPIO_NUM_18
-```
 
 ## LED color codes
 
@@ -267,7 +252,7 @@ not change. After the error message, it tries the active directory's
 
 Only root `keyflow.txt` should define the layout.
 
-### Layout 1 — standard row layout
+### Layout 1 — Rotated layout
 
 ```ini
 keypad=1
@@ -282,7 +267,7 @@ keypad=1
 
 Use layout 1 for the currently fitted keypad.
 
-### Layout 2 — transposed layout (default)
+### Layout 2 — statdard layout (default)
 
 ```ini
 keypad=2
@@ -296,6 +281,22 @@ keypad=2
 | **Row 3** | A | B | C | D |
 
 If `keypad` is absent or has a value other than `1`, layout 2 is used.
+
+### Pinout
+
+Keypad GPIO assignments:
+
+```text
+PIN_ROW0 = GPIO_NUM_4
+PIN_ROW1 = GPIO_NUM_5
+PIN_ROW2 = GPIO_NUM_6
+PIN_ROW3 = GPIO_NUM_7
+
+PIN_COL0 = GPIO_NUM_15
+PIN_COL1 = GPIO_NUM_16
+PIN_COL2 = GPIO_NUM_17
+PIN_COL3 = GPIO_NUM_18
+```
 
 ## Complete example
 
