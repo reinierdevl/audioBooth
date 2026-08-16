@@ -1,6 +1,6 @@
 ; AudioBooth keypad test configuration
 ini=main.mp3
-keypad=2
+keypad=1
 no_key=silence
 
 0=key_0.mp3

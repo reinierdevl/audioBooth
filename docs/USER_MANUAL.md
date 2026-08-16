@@ -2,16 +2,7 @@
 
 ## Pinout
 
-The keypad uses the following matrix:
-
-| | Column 0 | Column 1 | Column 2 | Column 3 |
-|---|:---:|:---:|:---:|:---:|
-| **Row 0** | 1 | 2 | 3 | A |
-| **Row 1** | 4 | 5 | 6 | B |
-| **Row 2** | 7 | 8 | 9 | C |
-| **Row 3** | `*` | 0 | `#` | D |
-
-GPIO assignments:
+Keypad GPIO assignments:
 
 ```text
 PIN_ROW0 = GPIO_NUM_4
@@ -197,7 +188,7 @@ ini=welcome.mp3
 2=stories
 3=/opening_hours
 no_key=silence
-keypad=2
+keypad=1
 ```
 
 This plays `welcome.mp3` initially, makes key `1` play a file, key `2` enter a
@@ -272,12 +263,14 @@ active directory and then each parent up to root. The active directory does
 not change. After the error message, it tries the active directory's
 `ini`/`main.mp3` again. Always provide a valid root `/error.mp3`.
 
-## Keypad layout
+## Keypad layouts
 
-Only root `keyflow.txt` should define the layout. The current keypad uses:
+Only root `keyflow.txt` should define the layout.
+
+### Layout 1 — standard row layout
 
 ```ini
-keypad=2
+keypad=1
 ```
 
 | | Column 0 | Column 1 | Column 2 | Column 3 |
@@ -287,7 +280,22 @@ keypad=2
 | **Row 2** | 7 | 8 | 9 | C |
 | **Row 3** | `*` | 0 | `#` | D |
 
-If `keypad` is absent, layout 2 is used.
+Use layout 1 for the currently fitted keypad.
+
+### Layout 2 — transposed layout (default)
+
+```ini
+keypad=2
+```
+
+| | Column 0 | Column 1 | Column 2 | Column 3 |
+|---|:---:|:---:|:---:|:---:|
+| **Row 0** | 1 | 4 | 7 | `*` |
+| **Row 1** | 2 | 5 | 8 | 0 |
+| **Row 2** | 3 | 6 | 9 | `#` |
+| **Row 3** | A | B | C | D |
+
+If `keypad` is absent or has a value other than `1`, layout 2 is used.
 
 ## Complete example
 
@@ -318,7 +326,7 @@ ini=welcome.mp3
 2=stories
 3=/opening_hours
 no_key=silence
-keypad=2
+keypad=1
 ```
 
 `/stories/keyflow.txt`:
