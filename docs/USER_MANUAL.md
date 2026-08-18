@@ -112,6 +112,13 @@ logical 0 and a jumper connected to ground is logical 1. `ID0` is bit 0 and
 `ID3` is bit 3. The same `audiobooth_xx` name is advertised as the device
 hostname when AudioBooth joins a configured Wi-Fi network.
 
+```text
+PIN_BOOTH_ID0 = GPIO_NUM_39;
+PIN_BOOTH_ID1 = GPIO_NUM_40;
+PIN_BOOTH_ID2 = GPIO_NUM_41;
+PIN_BOOTH_ID3 = GPIO_NUM_42;
+```
+
 Connect a phone or computer, then open the IP address printed in Serial. The
 usual AP address is `http://192.168.4.1/`.
 
