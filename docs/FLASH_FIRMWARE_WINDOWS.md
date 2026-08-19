@@ -90,6 +90,95 @@ partition or application files.
 
 The installation is now complete.
 
+## Alternative: Espressif Flash Download Tool for Windows
+
+Use this method if the browser method is unavailable or if the firmware
+supplier specifically asks you to use the Windows application.
+
+### Download the application
+
+1. Open the official Espressif download page:
+
+   <https://www.espressif.com/en/support/download/other-tools>
+
+2. Find **Flash Download Tools** and download the latest Windows version.
+3. Open the downloaded ZIP file and extract all its contents to a new folder.
+4. Open that folder and start the Flash Download Tool `.exe` file. If Windows
+   displays a security question, confirm only if the file was downloaded from
+   the official `espressif.com` website.
+
+### Select the device type
+
+In the first window, select:
+
+| Setting | Value |
+|---|---|
+| ChipType | `ESP32-S3` |
+| WorkMode | `Develop` |
+| LoadMode | `UART` |
+
+Then select **OK**.
+
+`UART` is also normally used when the serial connection reaches the PC
+through a USB cable. If the supplied hardware specifically uses native USB
+download mode, the supplier may instruct you to select `USB` instead.
+
+### Select the combined firmware file
+
+1. In the first firmware row, select the file-selection button.
+2. Choose the supplied `firmware.factory.bin` file.
+3. Enter this address in the address box on the same row:
+
+   ```text
+   0x0
+   ```
+
+4. Enable the checkbox at the left of that firmware row.
+5. Leave all other firmware rows empty and disabled. The factory file already
+   contains the bootloader, partition table and application.
+
+### Configure the flash
+
+Use the following settings:
+
+| Setting | Value |
+|---|---|
+| SPI SPEED | `80MHz` |
+| SPI MODE | `DIO` |
+| FLASH SIZE | `16MB` |
+| BAUD | `460800` |
+
+If programming is unreliable, reduce **BAUD** to `115200`. Do not change the
+firmware address from `0x0`.
+
+### Select the COM port and program
+
+1. Connect the AudioBooth directly to the Windows PC with a USB data cable.
+2. Select the COM port that appears when the device is connected, for example
+   `COM5`.
+3. If no COM port appears, follow the driver and cable checks in the
+   troubleshooting section below.
+4. Select **START**.
+5. If the tool remains at `Connecting`, put the ESP32-S3 into download mode:
+   - Press and hold **BOOT**.
+   - Briefly press and release **RESET** or **EN**.
+   - Release **BOOT**.
+   - Select **START** again.
+6. Wait until the tool displays **FINISH**. Do not disconnect the USB cable
+   while the progress bar is moving.
+7. Close or stop the Flash Download Tool so that it releases the COM port.
+8. Press **RESET** or **EN** once. Alternatively, unplug USB, wait five
+   seconds and reconnect it without holding **BOOT**.
+
+The AudioBooth firmware should now start.
+
+### Erasing with the Windows tool
+
+Do not select **ERASE** unless the firmware supplier specifically asks you to
+perform a clean installation. Erasing removes saved Wi-Fi settings and all
+audio in internal ESP32 storage. After erasing, program
+`firmware.factory.bin` again at address `0x0`. An SD card is not erased.
+
 ## What happens after installation
 
 The firmware checks for an SD card only during startup:
@@ -150,4 +239,3 @@ named `audiobooth_xx`, where `xx` is its booth ID. The password is:
 Do not select **Erase Flash** unless the person who supplied the firmware
 specifically asks you to do so. Erasing removes saved Wi-Fi settings and all
 audio stored in the ESP32 internal storage. It does not affect an SD card.
-
