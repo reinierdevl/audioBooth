@@ -159,7 +159,7 @@ An existing file with exactly the same name is always overwritten. Do not
 lift the handset, reset, remove SD or disconnect power during upload. If the
 handset is lifted, the upload is rejected and a partial new file is removed.
 
-Note that files that are uploaded to the internal memory (when no SD is present) 
+Note that files that are uploaded to the internal memory FFAT (when no SD is present) 
 will not be deleted after power down or reset.
 
 ### Delete and download
