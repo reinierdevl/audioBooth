@@ -174,7 +174,7 @@ DirectoryConfig readDirectoryConfig(const String &directory, bool applyRootKeypa
         } else if (lowerName == "no_key") {
             parseNoKey(value, config);
         } else if (applyRootKeypad && lowerName == "keypad") {
-            setKeypadLayout(value.toInt() == 1 ? 1 : 2);
+            setKeypadLayout(value.toInt() == 2 ? 2 : 1);
         } else if (name.length() == 1) {
             const int index = keyIndex(name[0]);
             if (index >= 0) config.keyTargets[index] = value;
@@ -335,7 +335,7 @@ void beginKeyflowSession()
     lastPlayedFile = "";
     recovering = false;
     waitingForNoKey = false;
-    setKeypadLayout(2);
+    setKeypadLayout(1);
     activeConfig = readDirectoryConfig(activeDirectory, true);
     Serial.println("Keyflow session started at root.");
     playInitial(true);

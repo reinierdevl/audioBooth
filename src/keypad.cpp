@@ -36,7 +36,7 @@ constexpr char KEY_LABELS_LAYOUT_2[4][4] = {
     {'A', 'B', 'C', 'D'},
 };
 
-uint8_t keypadLayout = 2;
+uint8_t keypadLayout = 1;
 uint8_t lastScanRow = 0;
 uint8_t lastScanColumn = 0;
 
@@ -118,5 +118,6 @@ char keypadPressEvent()
 
 void setKeypadLayout(uint8_t layout)
 {
-    keypadLayout = layout == 1 ? 1 : 2;
+    // Layout 1 is the safe default. Layout 2 must be selected explicitly.
+    keypadLayout = layout == 2 ? 2 : 1;
 }

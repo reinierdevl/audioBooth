@@ -6,3 +6,7 @@
 .vscode/launch.json
 .vscode/ipch/
 compile_commands.json
+*.bin
+*.map
+.DS_store
+Thumbs.db

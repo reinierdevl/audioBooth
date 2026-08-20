@@ -1,5 +1,11 @@
 # PhoneBooth universal
 
+For simple firmware installation from an Apple MacBook, see
+[Installing AudioBooth Firmware from a MacBook](docs/FLASH_FIRMWARE_MACBOOK.md).
+
+For simple firmware installation from a Windows PC, see
+[Installing AudioBooth Firmware from Windows](docs/FLASH_FIRMWARE_WINDOWS.md).
+
 Standalone ESP32-S3 N16R8 telephone-handset MP3 player.
 
 ## Development environment

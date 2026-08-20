@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 // Initializes the ES8311 for BCLK-derived internal MCLK and configures I2S.
 bool beginAudioPlayer();
 
@@ -13,6 +15,10 @@ void stopAudioPlayback();
 void serviceAudioPlayback();
 
 bool audioIsPlaying();
+
+// Persistent playback volume shown on the website, expressed as 0..100%.
+uint8_t audioVolumePercent();
+bool setAudioVolumePercent(uint8_t percent);
 
 // Returns true once after a file reaches its natural end.
 bool takeAudioEndEvent();

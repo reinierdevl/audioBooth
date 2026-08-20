@@ -166,6 +166,18 @@ handset is lifted, the upload is rejected and a partial new file is removed.
 - On a configured existing Wi-Fi network, select a filename to download it.
 - Download is disabled in fallback AP mode.
 
+### Set the playback volume
+
+The **Playback volume** section contains a slider from 0% to 100%. Move the
+slider to the required level and select **Save volume**. The selected value is
+used for every MP3 file and remains stored after reset or power-off. If no
+volume has ever been saved, the default is 40%. The slider shows the current
+stored value whenever the page is opened. At 100%, both the decoder output and
+the configured ES8311 playback level can reach their full output.
+
+Volume can only be changed while the handset is down, like all other website
+functions. A value of 0% mutes playback; it does not stop or pause the MP3.
+
 ## Configuring `keyflow.txt`
 
 Every menu directory may contain MP3 files, subdirectories and a local

@@ -6,6 +6,7 @@
 #include <WebServer.h>
 #include <WiFi.h>
 
+#include "audio_player.h"
 #include "pins.h"
 #include "storage_manager.h"
 #include "status_led.h"
@@ -381,7 +382,19 @@ void handleBrowser()
         "<h2>Create directory</h2>"
         "<form method=post action=/mkdir>"
         "<input name=name maxlength=96 placeholder='Directory name' required> "
-        "<button type=submit>Create</button></form>"
+        "<button type=submit>Create</button></form>"));
+
+    String volumeForm = "<h2>Playback volume</h2>"
+        "<p class=meta>The saved volume is used for all audio and remains set after reset or power-off.</p>"
+        "<form method=post action=/volume>"
+        "<label>Volume <input type=range name=volume min=0 max=100 step=5 value="
+        + String(audioVolumePercent())
+        + " oninput=\"volumeValue.value=this.value+'%'\"></label> "
+          "<output id=volumeValue>" + String(audioVolumePercent()) + "%</output> "
+          "<button type=submit>Save volume</button></form>";
+    server.sendContent(volumeForm);
+
+    server.sendContent(F(
         "<h2>Wi-Fi for next reset</h2>"
         "<p class=meta>Saving these values does not interrupt the current connection. "
         "They are used after the next reset.</p>"));
@@ -469,6 +482,44 @@ void handleSaveWifi()
         "<title>Wi-Fi saved</title></head><body><h1>Wi-Fi settings saved</h1>"
         "<p>The new SSID and password will be used after the next reset.</p>"
         "<p><a href='/'>Return to storage</a></p></body></html>");
+}
+
+void handleSaveVolume()
+{
+    if (!webAccessAllowed()) {
+        sendBusy();
+        return;
+    }
+    if (!server.hasArg("volume")) {
+        server.send(400, "text/plain", "Volume is required");
+        return;
+    }
+
+    String value = server.arg("volume");
+    value.trim();
+    if (value.isEmpty()) {
+        server.send(400, "text/plain", "Invalid volume");
+        return;
+    }
+    for (size_t i = 0; i < value.length(); ++i) {
+        if (value[i] < '0' || value[i] > '9') {
+            server.send(400, "text/plain", "Invalid volume");
+            return;
+        }
+    }
+
+    const long percent = value.toInt();
+    if (percent < 0 || percent > 100) {
+        server.send(400, "text/plain", "Volume must be between 0 and 100");
+        return;
+    }
+    if (!setAudioVolumePercent(static_cast<uint8_t>(percent))) {
+        server.send(500, "text/plain", "Could not save volume");
+        return;
+    }
+
+    Serial.printf("Playback volume saved: %ld%%\n", percent);
+    redirectToBrowser();
 }
 
 void handleDelete()
@@ -644,6 +695,7 @@ void registerRoutes()
     server.on("/", HTTP_GET, handleBrowser);
     server.on("/mkdir", HTTP_POST, handleCreateDirectory);
     server.on("/wifi", HTTP_POST, handleSaveWifi);
+    server.on("/volume", HTTP_POST, handleSaveVolume);
     server.on("/delete", HTTP_POST, handleDelete);
     server.on("/download", HTTP_GET, handleDownload);
     server.on("/upload", HTTP_POST, handleUploadFinished, handleUploadData);

@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <Audio.h>
+#include <Preferences.h>
 #include <Wire.h>
 
 #include "pins.h"
@@ -10,13 +11,35 @@
 namespace {
 
 constexpr uint8_t ES8311_ADDRESS = 0x18;
-constexpr uint8_t ES8311_PLAYBACK_VOLUME = 60; // 0..100
-constexpr uint8_t AUDIO_OUTPUT_VOLUME = 21;    // 0..21
+// Keep the codec itself capable of full output. The persistent website
+// setting controls the decoder level from 0% through the real 100% maximum.
+constexpr uint8_t ES8311_PLAYBACK_VOLUME = 100; // 0..100
+constexpr uint8_t DEFAULT_VOLUME_PERCENT = 40;
+constexpr char AUDIO_PREFERENCES_NAMESPACE[] = "audiobooth";
+constexpr char AUDIO_VOLUME_KEY[] = "volume_pct";
 
 Audio audio;
 bool codecReady = false;
 bool playing = false;
 volatile bool endEvent = false;
+uint8_t outputVolumePercent = DEFAULT_VOLUME_PERCENT;
+
+void loadStoredOutputVolume()
+{
+    Preferences preferences;
+    if (!preferences.begin(AUDIO_PREFERENCES_NAMESPACE, false)) {
+        outputVolumePercent = DEFAULT_VOLUME_PERCENT;
+        Serial.println("Could not open volume settings; using 40%.");
+        return;
+    }
+
+    outputVolumePercent = preferences.getUChar(
+        AUDIO_VOLUME_KEY, DEFAULT_VOLUME_PERCENT);
+    preferences.end();
+    if (outputVolumePercent > 100) {
+        outputVolumePercent = DEFAULT_VOLUME_PERCENT;
+    }
+}
 
 bool writeCodecRegister(uint8_t reg, uint8_t value)
 {
@@ -98,6 +121,9 @@ void audioInfo(Audio::msg_t message)
 bool beginAudioPlayer()
 {
     Audio::audio_info_callback = audioInfo;
+    loadStoredOutputVolume();
+    Serial.printf("Playback volume: %u%%\n",
+                  static_cast<unsigned>(outputVolumePercent));
 
     codecReady = beginCodecWithoutMclk();
     if (!codecReady) {
@@ -110,6 +136,10 @@ bool beginAudioPlayer()
         codecReady = false;
         return false;
     }
+
+    // Match the decoder's number of volume steps to the website percentage,
+    // so every stored value maps directly from 0 through the true 100% level.
+    audio.setVolumeSteps(100);
 
     // Start silent. Lifting the handset enables the decoder volume.
     audio.setVolume(0);
@@ -132,7 +162,7 @@ bool playAudioFile(const char *path)
         return false;
     }
 
-    audio.setVolume(AUDIO_OUTPUT_VOLUME);
+    audio.setVolume(outputVolumePercent);
     playing = audio.connecttoFS(*fileSystem, path);
     if (!playing) {
         audio.setVolume(0);
@@ -169,6 +199,32 @@ void serviceAudioPlayback()
 bool audioIsPlaying()
 {
     return playing;
+}
+
+uint8_t audioVolumePercent()
+{
+    return outputVolumePercent;
+}
+
+bool setAudioVolumePercent(uint8_t percent)
+{
+    if (percent > 100) return false;
+
+    Preferences preferences;
+    if (!preferences.begin(AUDIO_PREFERENCES_NAMESPACE, false)) {
+        return false;
+    }
+    const size_t written = preferences.putUChar(AUDIO_VOLUME_KEY, percent);
+    preferences.end();
+    if (written != sizeof(percent)) {
+        return false;
+    }
+
+    outputVolumePercent = percent;
+    if (playing) {
+        audio.setVolume(outputVolumePercent);
+    }
+    return true;
 }
 
 bool takeAudioEndEvent()
